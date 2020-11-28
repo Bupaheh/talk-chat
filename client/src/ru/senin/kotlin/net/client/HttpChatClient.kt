@@ -1,12 +1,19 @@
 package ru.senin.kotlin.net.client
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import retrofit2.Retrofit
+import retrofit2.converter.jackson.JacksonConverterFactory
 import ru.senin.kotlin.net.HttpApi
 import ru.senin.kotlin.net.Message
+import ru.senin.kotlin.net.RegistryApi
+import ru.senin.kotlin.net.parameters
 
 class HttpChatClient(host: String, port: Int) {
     private val objectMapper = jacksonObjectMapper()
-    private val httpApi: HttpApi = TODO("Create HttpApi Retrofit implementation with base url http://$host:$port")
+    private val httpApi: HttpApi = Retrofit.Builder()
+        .baseUrl("http://$host:$port")
+        .addConverterFactory(JacksonConverterFactory.create(objectMapper))
+        .build().create(HttpApi::class.java)
 
     fun sendMessage(message: Message) {
         val response = httpApi.sendMessage(message).execute()

@@ -12,6 +12,7 @@ import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import org.slf4j.LoggerFactory
 import org.slf4j.event.Level
+import ru.senin.kotlin.net.Message
 
 
 interface ChatMessageListener {
@@ -68,8 +69,8 @@ class HttpChatServer(private val host: String, private val port: Int) {
 
         routing {
             // TODO: add GET HttpOptions.healthCheckPath route
-
             // TODO: add POST HttpOptions.path route
+
             install(StatusPages) {
                 exception<IllegalArgumentException> {
                     call.respond(HttpStatusCode.BadRequest)
