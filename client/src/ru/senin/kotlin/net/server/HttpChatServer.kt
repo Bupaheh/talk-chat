@@ -69,7 +69,16 @@ class HttpChatServer(private val host: String, private val port: Int) {
 
         routing {
             // TODO: add GET HttpOptions.healthCheckPath route
+            get("/v1/health") {
+                call.respondText("OK", contentType = ContentType.Text.Plain)
+            }
+
             // TODO: add POST HttpOptions.path route
+            post("/v1/message") {
+                val message = call.receive<Message>()
+                listener?.messageReceived(message.user, message.text)
+                call.respond(mapOf("status" to "ok"))
+            }
 
             install(StatusPages) {
                 exception<IllegalArgumentException> {
