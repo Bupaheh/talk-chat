@@ -68,14 +68,20 @@ fun Application.module(testing: Boolean = false) {
         }
 
         get("/v1/users") {
-            TODO()
+            call.respond(Registry.users)
         }
 
         put("/v1/users/{name}") {
-            TODO()
+            val name = call.parameters["name"] ?: ""
+            checkUserName(name) ?: throw IllegalUserNameException()
+            Registry.users[name] = call.receive<UserAddress>()
+            call.respond(mapOf("status" to "ok"))
         }
 
-        // TODO: add DELETE /v1/users/{name}
+        delete("v1/users/{name}") {
+            val name = call.parameters["name"] ?: ""
+            Registry.users.remove(name)
+        }
     }
 }
 

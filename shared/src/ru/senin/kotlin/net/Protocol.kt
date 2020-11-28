@@ -13,4 +13,4 @@ data class UserInfo(val name: String, val address: UserAddress)
 
 data class Message(val user: String, val text: String)
 
-fun checkUserName(name: String) = """^TODO: regular expression required$""".toRegex().find(name)
+fun checkUserName(name: String) = """^[a-zA-Z0-9-_.]+$""".toRegex().find(name)

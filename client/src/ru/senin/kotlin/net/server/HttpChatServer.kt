@@ -4,6 +4,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.ktor.application.*
 import io.ktor.features.*
 import io.ktor.http.*
+import io.ktor.jackson.*
 import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
@@ -60,10 +61,14 @@ class HttpChatServer(private val host: String, private val port: Int) {
 
         install(ContentNegotiation) {
             // TODO: initialize jackson
+            jackson {
+//                enable(SerializationFeature.INDENT_OUTPUT)
+            }
         }
 
         routing {
             // TODO: add GET HttpOptions.healthCheckPath route
+
             // TODO: add POST HttpOptions.path route
             install(StatusPages) {
                 exception<IllegalArgumentException> {
