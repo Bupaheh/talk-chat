@@ -1,5 +1,5 @@
 group = "ru.senin.kotlin.net.client"
-application.mainClassName = "io.ktor.server.netty.EngineMain"
+application.mainClassName = "ru.senin.kotlin.net.client.MainKt"
 
 dependencies {
     implementation(project(":shared"))

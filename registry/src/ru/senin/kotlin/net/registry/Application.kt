@@ -2,6 +2,8 @@ package ru.senin.kotlin.net.registry
 
 import com.fasterxml.jackson.databind.SerializationFeature
 import io.ktor.application.*
+import io.ktor.client.*
+import io.ktor.client.request.*
 import io.ktor.features.*
 import io.ktor.http.*
 import io.ktor.jackson.*
@@ -9,16 +11,34 @@ import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
 import io.ktor.server.netty.*
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.slf4j.event.Level
 import ru.senin.kotlin.net.UserAddress
 import ru.senin.kotlin.net.UserInfo
 import ru.senin.kotlin.net.checkUserName
+import java.util.*
 import java.util.concurrent.ConcurrentHashMap
+import javax.xml.bind.JAXBElement
 import kotlin.concurrent.thread
 
 fun main(args: Array<String>) {
-    thread {
+    val client = HttpClient()
+    GlobalScope.launch {
         // TODO: periodically check users and remove unreachable ones
+        while (true) {
+            val it = Registry.users.iterator()
+            println(Registry.users)
+            while (it.hasNext()) {
+                val userAddress = it.next().value;
+                val call: String? = try { client.get("$userAddress/v1/health") } catch (e: Exception) { null }
+                println(call)
+                if (call != "OK")
+                    it.remove();
+            }
+            delay(2000);
+        }
     }
     EngineMain.main(args)
 }
@@ -81,6 +101,7 @@ fun Application.module(testing: Boolean = false) {
         delete("v1/users/{name}") {
             val name = call.parameters["name"] ?: ""
             Registry.users.remove(name)
+            call.respond(mapOf("status" to "ok"))
         }
     }
 }
