@@ -10,10 +10,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import ru.senin.kotlin.net.UserAddress
 import ru.senin.kotlin.net.UserInfo
-import kotlin.test.Ignore
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
-import kotlin.test.fail
+import kotlin.reflect.typeOf
+import kotlin.test.*
 
 fun Application.testModule() {
 
@@ -48,16 +46,40 @@ class ApplicationTest {
     @Test
     fun `register user`() = withRegisteredTestUser { }
 
-    @Ignore
     @Test
     fun `list users`() = withRegisteredTestUser {
-        TODO()
+        withTestApplication({ testModule() }) {
+            handleRequest(HttpMethod.Get, "/v1/users").apply {
+                assertEquals(HttpStatusCode.OK, response.status())
+                val content = response.content ?: fail("No response content")
+                val users = objectMapper.readValue<HashMap<String, UserAddress>>(content)
+                assertEquals(users["pupkin"], testHttpAddress)
+            }
+        }
     }
 
-    @Ignore
     @Test
     fun `delete user`() = withRegisteredTestUser {
-        TODO()
+        withTestApplication({ testModule() }) {
+            handleRequest {
+                method = HttpMethod.Delete
+                uri = "/v1/users/${testUserName}"
+                addHeader("Content-type", "application/json")
+            }.apply {
+                assertEquals(HttpStatusCode.OK, response.status())
+                val content = response.content ?: fail("No response content")
+                val info = objectMapper.readValue<HashMap<String,String>>(content)
+
+                assertNotNull(info["status"])
+                assertEquals("ok", info["status"])
+            }
+            handleRequest(HttpMethod.Get, "/v1/users").apply {
+                assertEquals(HttpStatusCode.OK, response.status())
+                val content = response.content ?: fail("No response content")
+                val users = objectMapper.readValue<HashMap<String, UserAddress>>(content)
+                assertFalse(testUserName in users)
+            }
+        }
     }
 
     private fun withRegisteredTestUser(block: TestApplicationEngine.() -> Unit) {
