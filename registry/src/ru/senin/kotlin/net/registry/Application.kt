@@ -31,13 +31,13 @@ fun main(args: Array<String>) {
             val it = Registry.users.iterator()
             println(Registry.users)
             while (it.hasNext()) {
-                val userAddress = it.next().value;
+                val userAddress = it.next().value
                 val call: String? = try { client.get("$userAddress/v1/health") } catch (e: Exception) { null }
                 println(call)
                 if (call != "OK")
-                    it.remove();
+                    it.remove()
             }
-            delay(2000);
+            delay(2000)
         }
     }
     EngineMain.main(args)

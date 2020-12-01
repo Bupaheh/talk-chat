@@ -1,5 +1,5 @@
 group = "ru.senin.kotlin.net.client"
-application.mainClassName = "ru.senin.kotlin.net.client.MainKt"
+application.mainClassName = "ru.senin.kotlin.net.MainKt"
 
 dependencies {
     implementation(project(":shared"))
@@ -28,3 +28,5 @@ dependencies {
     
     testImplementation("io.ktor:ktor-server-tests:$ktor_version")
 }
+
+val run by tasks.getting(JavaExec::class) { standardInput = System.`in` }
