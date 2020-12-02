@@ -2,6 +2,7 @@ package ru.senin.kotlin.net
 
 import ru.senin.kotlin.net.client.HttpChatClient
 import ru.senin.kotlin.net.server.ChatMessageListener
+import kotlin.concurrent.thread
 
 class Chat(
     private val name: String,
@@ -24,10 +25,11 @@ class Chat(
         return value.trimStart()
     }
 
-    private fun updateUsersList() {
+    private fun updateUsersList(isSilent: Boolean = false) {
         val registeredUsers = registry.list().execute().getOrNull()
         if (registeredUsers == null) {
-            println("Cannot get users from registry")
+            if(!isSilent)
+                println("Cannot get users from registry")
             return
         }
         val aliveUserNames = registeredUsers.keys
@@ -38,9 +40,10 @@ class Chat(
         users.clear()
         users.putAll(registeredUsers)
         clients.entries.retainAll { it.key in aliveUserNames }
-        users.forEach { (name, address) ->
-            println("$name ==> $address")
-        }
+        if(!isSilent)
+            users.forEach { (name, address) ->
+                println("$name ==> $address")
+            }
     }
 
     private fun selectUser(userName: String) {
@@ -82,6 +85,12 @@ class Chat(
         var input: String
         printWelcome()
         updateUsersList()
+        thread(isDaemon = true) {
+            while (true) {
+                updateUsersList(true)
+                Thread.sleep(120 * 1000)
+            }
+        }
         while (!exit) {
             input = prompt()
             when (input.substringBefore(" ")) {
@@ -100,7 +109,7 @@ class Chat(
     private fun printWelcome() {
         println(
             """
-                          Был бы                      
+                                                
              _______     _       _       _   __   
             |__   __|   / \     | |     | | / /   
                | |     / ^ \    | |     | |/ /    

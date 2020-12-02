@@ -18,10 +18,7 @@ import org.slf4j.event.Level
 import ru.senin.kotlin.net.UserAddress
 import ru.senin.kotlin.net.UserInfo
 import ru.senin.kotlin.net.checkUserName
-import java.util.*
 import java.util.concurrent.ConcurrentHashMap
-//import javax.xml.bind.JAXBElement
-import kotlin.concurrent.thread
 
 fun main(args: Array<String>) {
     val client = HttpClient()
