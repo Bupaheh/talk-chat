@@ -99,7 +99,7 @@ fun Application.module(testing: Boolean = false) {
         put("/v1/users/{name}") {
             val name = call.parameters["name"] ?: ""
             checkUserName(name) ?: throw IllegalUserNameException()
-            Registry.users[name] = call.receive<UserAddress>()
+            Registry.users[name] = call.receive()
             call.respond(mapOf("status" to "ok"))
         }
 

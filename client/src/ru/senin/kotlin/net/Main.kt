@@ -40,6 +40,8 @@ class Parameters : Arkenv() {
 val log: Logger = LoggerFactory.getLogger("main")
 lateinit var parameters : Parameters
 
+fun checkHost(host: String) = host.length <= 253 && Regex("""(\p{Alnum}{1,63}.)*\p{Alnum}{1,63}""").matches(host)
+
 fun main(args: Array<String>) {
     try {
         parameters = Parameters().parse(args)
@@ -52,6 +54,10 @@ fun main(args: Array<String>) {
         val port = parameters.port
 
         // TODO: validate host and port
+        if (!checkHost(host))
+            throw IllegalArgumentException("Illegal host '$host'")
+        if (port !in 1..65535)
+            throw IllegalArgumentException("Illegal port $port")
 
         val name = parameters.name
         checkUserName(name) ?: throw IllegalArgumentException("Illegal user name '$name'")
