@@ -42,9 +42,50 @@ class ApplicationTest {
         }
     }
 
-    @Ignore
     @Test
-    fun `register user`() = withRegisteredTestUser { }
+    fun `register user`() {
+        withTestApplication({ testModule() }) {
+            //registration test
+            handleRequest {
+                method = HttpMethod.Post
+                uri = "/v1/users"
+                addHeader("Content-type", "application/json")
+                setBody(objectMapper.writeValueAsString(userData))
+            }.apply {
+                assertEquals(HttpStatusCode.OK, response.status())
+                val content = response.content ?: fail("No response content")
+                val info = objectMapper.readValue<HashMap<String, String>>(content)
+
+                assertNotNull(info["status"])
+                assertEquals("ok", info["status"])
+            }
+
+            //test with incorrect name
+            val testUserData = UserInfo("Test test", testHttpAddress)
+            handleRequest {
+                method = HttpMethod.Post
+                uri = "/v1/users"
+                addHeader("Content-type", "application/json")
+                setBody(objectMapper.writeValueAsString(testUserData))
+            }.apply {
+                assertEquals(HttpStatusCode.BadRequest, response.status())
+                val content = response.content ?: fail("No response content")
+                assertEquals("Illegal user name", content)
+            }
+
+            //user already registered test
+            handleRequest {
+                method = HttpMethod.Post
+                uri = "/v1/users"
+                addHeader("Content-type", "application/json")
+                setBody(objectMapper.writeValueAsString(userData))
+            }.apply {
+                assertEquals(HttpStatusCode.Conflict, response.status())
+                val content = response.content ?: fail("No response content")
+                assertEquals("User already registered", content)
+            }
+        }
+    }
 
     @Test
     fun `list users`() = withRegisteredTestUser {
