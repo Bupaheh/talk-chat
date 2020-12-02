@@ -72,37 +72,33 @@ class ApplicationTest {
 
     @Test
     fun `list users`() = withRegisteredTestUser {
-        withTestApplication({ testModule() }) {
-            handleRequest(HttpMethod.Get, "/v1/users").apply {
-                assertEquals(HttpStatusCode.OK, response.status())
-                val content = response.content ?: fail("No response content")
-                val users = objectMapper.readValue<HashMap<String, UserAddress>>(content)
-                assertEquals(users[testUserName], testHttpAddress)
-            }
+        handleRequest(HttpMethod.Get, "/v1/users").apply {
+            assertEquals(HttpStatusCode.OK, response.status())
+            val content = response.content ?: fail("No response content")
+            val users = objectMapper.readValue<HashMap<String, UserAddress>>(content)
+            assertEquals(users[testUserName], testHttpAddress)
         }
     }
 
     @Test
     fun `delete user`() = withRegisteredTestUser {
-        withTestApplication({ testModule() }) {
-            handleRequest {
-                method = HttpMethod.Delete
-                uri = "/v1/users/${testUserName}"
-                addHeader("Content-type", "application/json")
-            }.apply {
-                assertEquals(HttpStatusCode.OK, response.status())
-                val content = response.content ?: fail("No response content")
-                val info = objectMapper.readValue<HashMap<String,String>>(content)
+        handleRequest {
+            method = HttpMethod.Delete
+            uri = "/v1/users/${testUserName}"
+            addHeader("Content-type", "application/json")
+        }.apply {
+            assertEquals(HttpStatusCode.OK, response.status())
+            val content = response.content ?: fail("No response content")
+            val info = objectMapper.readValue<HashMap<String,String>>(content)
 
-                assertNotNull(info["status"])
-                assertEquals("ok", info["status"])
-            }
-            handleRequest(HttpMethod.Get, "/v1/users").apply {
-                assertEquals(HttpStatusCode.OK, response.status())
-                val content = response.content ?: fail("No response content")
-                val users = objectMapper.readValue<HashMap<String, UserAddress>>(content)
-                assertFalse(testUserName in users)
-            }
+            assertNotNull(info["status"])
+            assertEquals("ok", info["status"])
+        }
+        handleRequest(HttpMethod.Get, "/v1/users").apply {
+            assertEquals(HttpStatusCode.OK, response.status())
+            val content = response.content ?: fail("No response content")
+            val users = objectMapper.readValue<HashMap<String, UserAddress>>(content)
+            assertFalse(testUserName in users)
         }
     }
 
