@@ -53,7 +53,7 @@ class ApplicationTest {
                 assertEquals(HttpStatusCode.OK, response.status())
                 val content = response.content ?: fail("No response content")
                 val users = objectMapper.readValue<HashMap<String, UserAddress>>(content)
-                assertEquals(users["pupkin"], testHttpAddress)
+                assertEquals(users[testUserName], testHttpAddress)
             }
         }
     }

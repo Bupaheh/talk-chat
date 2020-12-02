@@ -26,18 +26,23 @@ import kotlin.concurrent.thread
 fun main(args: Array<String>) {
     val client = HttpClient()
     GlobalScope.launch {
-        // TODO: periodically check users and remove unreachable ones
+        val failedChecks = mutableMapOf<String, Int>()
         while (true) {
-            val it = Registry.users.iterator()
-            println(Registry.users)
-            while (it.hasNext()) {
-                val userAddress = it.next().value
-                val call: String? = try { client.get("$userAddress/v1/health") } catch (e: Exception) { null }
-                println(call)
-                if (call != "OK")
-                    it.remove()
+            for ((user, userAddress) in Registry.users) {
+                val call: String? = try {
+                    client.get("$userAddress/v1/health")
+                } catch (e: Exception) {
+                    null
+                }
+                if (call == "OK")
+                    failedChecks.remove(user)
+                else
+                    failedChecks[user] = failedChecks.getOrDefault(user, 0) + 1
             }
-            delay(2000)
+            val usersToRemove = failedChecks.filter { it.value > 3 }.map { it.key }
+            usersToRemove.forEach { Registry.users.remove(it) }
+            failedChecks -= failedChecks.keys.filterNot { Registry.users.containsKey(it) }
+            delay(120 * 1000)
         }
     }
     EngineMain.main(args)
@@ -106,5 +111,5 @@ fun Application.module(testing: Boolean = false) {
     }
 }
 
-class UserAlreadyRegisteredException: RuntimeException("User already registered")
-class IllegalUserNameException: RuntimeException("Illegal user name")
+class UserAlreadyRegisteredException : RuntimeException("User already registered")
+class IllegalUserNameException : RuntimeException("Illegal user name")
