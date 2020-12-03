@@ -82,7 +82,7 @@ fun Application.module(testing: Boolean = false) {
             val user = call.receive<UserInfo>()
             val name = user.name
             checkUserName(name) ?: throw IllegalUserNameException()
-            if (Registry.users.keys.contains(name)) {
+            if (Registry.users.containsKey(name)) {
                 throw UserAlreadyRegisteredException()
             }
             Registry.users[name] = user.address
