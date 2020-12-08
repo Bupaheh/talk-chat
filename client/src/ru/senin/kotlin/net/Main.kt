@@ -27,13 +27,17 @@ class Parameters : Arkenv() {
         defaultValue = { "0.0.0.0" } // 0.0.0.0 - listen on all network interfaces
     }
 
-    val port : Int by argument("--port") {
+    val port : Int? by argument("--port") {
         description = "Port to listen for on"
-        defaultValue = { 8080 }
     }
 
     val publicUrl : String? by argument("--public-url") {
         description = "Public URL"
+    }
+
+    val protocol : String by argument("--protocol") {
+        description = "Server protocol"
+        defaultValue = { Protocol.HTTP.name }
     }
 }
 
@@ -50,8 +54,13 @@ fun main(args: Array<String>) {
             println(parameters.toString())
             return
         }
+        val protocol = Protocol.valueOf(parameters.protocol)
         val host = parameters.host
-        val port = parameters.port
+        val port = parameters.port ?: when (protocol) {
+            Protocol.HTTP -> 8080
+            Protocol.WEBSOCKET -> 8082
+            Protocol.UDP -> 3000
+        }
 
         // TODO: validate host and port
         if (!checkHost(host))
@@ -83,9 +92,9 @@ fun main(args: Array<String>) {
             val userAddress  = when {
                 parameters.publicUrl != null -> {
                     val url = URL(parameters.publicUrl)
-                    UserAddress(url.host, url.port)
+                    UserAddress(protocol, url.host, url.port)
                 }
-                else -> UserAddress(host, port)
+                else -> UserAddress(protocol, host, port)
             }
             registry.register(UserInfo(name, userAddress)).execute()
 

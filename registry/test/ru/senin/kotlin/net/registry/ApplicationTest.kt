@@ -8,6 +8,7 @@ import io.ktor.http.*
 import io.ktor.server.testing.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import ru.senin.kotlin.net.Protocol
 import ru.senin.kotlin.net.UserAddress
 import ru.senin.kotlin.net.UserInfo
 import kotlin.test.*
@@ -23,7 +24,7 @@ fun Application.testModule() {
 class ApplicationTest {
     private val objectMapper = jacksonObjectMapper()
     private val testUserName = "pupkin"
-    private val testHttpAddress = UserAddress("127.0.0.1", 9999)
+    private val testHttpAddress = UserAddress(Protocol.HTTP, "127.0.0.1", 9999)
     private val userData = UserInfo(testUserName, testHttpAddress)
 
     @BeforeEach

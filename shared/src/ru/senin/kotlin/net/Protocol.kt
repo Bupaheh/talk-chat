@@ -1,6 +1,11 @@
 package ru.senin.kotlin.net
 
+enum class Protocol {
+    HTTP, WEBSOCKET, UDP
+}
+
 data class UserAddress(
+    val protocol: Protocol,
     val host: String,
     val port: Int = 8080
 ) {
