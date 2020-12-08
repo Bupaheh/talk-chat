@@ -12,7 +12,7 @@ import org.slf4j.event.Level
 import ru.senin.kotlin.net.Message
 
 
-class HttpChatServer(host: String, port: Int) : ChatServer(host, port) {
+class HttpChatServer(host: String, port: Int) : NettyChatServer(host, port) {
     override fun configureModule(): Application.() -> Unit = {
         install(CallLogging) {
             level = Level.DEBUG

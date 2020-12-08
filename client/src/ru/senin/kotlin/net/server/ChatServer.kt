@@ -11,38 +11,17 @@ interface ChatMessageListener {
     fun messageReceived(userName: String, text: String)
 }
 
-abstract class ChatServer(private val host: String, private val port: Int) {
+abstract class ChatServer(protected val host: String, protected val port: Int) {
     protected val objectMapper = jacksonObjectMapper()
     protected var listener: ChatMessageListener? = null
 
-    private val engine = createEngine()
+    abstract fun start()
 
-    private fun createEngine(): NettyApplicationEngine {
-        val applicationEnvironment = applicationEngineEnvironment {
-            log = LoggerFactory.getLogger("chat-server")
-            classLoader = ApplicationEngineEnvironment::class.java.classLoader
-            connector {
-                this.host = this@ChatServer.host
-                this.port = this@ChatServer.port
-            }
-            module(configureModule())
-        }
-        return NettyApplicationEngine(applicationEnvironment)
-    }
-
-    fun start() {
-        engine.start(true)
-    }
-
-    fun stop() {
-        engine.stop(1000, 2000)
-    }
+    abstract fun stop()
 
     fun setMessageListener(listener: ChatMessageListener) {
         this.listener = listener
     }
-
-    abstract fun configureModule(): Application.() -> Unit
 
     companion object {
         fun create(protocol: Protocol, host: String, port: Int) = when (protocol) {

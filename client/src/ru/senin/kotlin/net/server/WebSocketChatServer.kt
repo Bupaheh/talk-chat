@@ -8,7 +8,7 @@ import io.ktor.routing.*
 import io.ktor.websocket.*
 import ru.senin.kotlin.net.Message
 
-class WebSocketChatServer(private val host: String, private val port: Int) : ChatServer(host, port) {
+class WebSocketChatServer(host: String, port: Int) : NettyChatServer(host, port) {
     override fun configureModule(): Application.() -> Unit = {
         install(WebSockets)
 
