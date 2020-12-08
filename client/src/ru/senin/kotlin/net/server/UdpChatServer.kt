@@ -22,5 +22,6 @@ class UdpChatServer(host: String, port: Int) : ChatServer(host, port) {
     }
 
     override fun stop() {
+        socket.close()
     }
 }
