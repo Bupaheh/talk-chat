@@ -1,6 +1,6 @@
 package ru.senin.kotlin.net
 
-import ru.senin.kotlin.net.client.HttpChatClient
+import ru.senin.kotlin.net.client.ChatClient
 import ru.senin.kotlin.net.server.ChatMessageListener
 import kotlin.concurrent.thread
 
@@ -11,8 +11,8 @@ class Chat(
 
     private var exit = false
     private var selectedUser: String? = null
-    private val clients = mutableMapOf<String, HttpChatClient>()
-    private var users =  mutableMapOf<String, UserAddress>()
+    private val clients = mutableMapOf<String, ChatClient>()
+    private val users =  mutableMapOf<String, UserAddress>()
 
     private fun prompt(): String {
         val prompt = "  to [${selectedUser ?: "<not selected>"}] <<< "
@@ -71,7 +71,7 @@ class Chat(
             return
         }
         val client = clients.getOrPut(currentUser) {
-            HttpChatClient(address.host, address.port)
+            ChatClient.create(address.protocol, address.host, address.port)
         }
         try {
             client.sendMessage(Message(name, text))

@@ -5,6 +5,7 @@ import io.ktor.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import org.slf4j.LoggerFactory
+import ru.senin.kotlin.net.Protocol
 
 interface ChatMessageListener {
     fun messageReceived(userName: String, text: String)
@@ -42,6 +43,14 @@ abstract class ChatServer(private val host: String, private val port: Int) {
     }
 
     abstract fun configureModule(): Application.() -> Unit
+
+    companion object {
+        fun create(protocol: Protocol, host: String, port: Int) = when (protocol) {
+            Protocol.HTTP -> HttpChatServer(host, port)
+            Protocol.WEBSOCKET -> WebSocketChatServer(host, port)
+            Protocol.UDP -> UdpChatServer(host, port)
+        }
+    }
 }
 
 // Send test message using curl:
