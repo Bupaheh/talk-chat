@@ -15,11 +15,15 @@ class UdpChatClient(host: String, port: Int) : ChatClient {
     private val objectMapper = jacksonObjectMapper()
 
     override fun sendMessage(message: Message) {
-        val text = objectMapper.writeValueAsString(message)
-        val packetBuilder = BytePacketBuilder()
-        packetBuilder.writeText(text)
-        runBlocking {
-            socket.send(Datagram(packetBuilder.build(), address))
+        if (socket.isClosed)
+            println("Failed to connect to ${address.hostString}:${address.port}")
+        else {
+            val text = objectMapper.writeValueAsString(message)
+            val packetBuilder = BytePacketBuilder()
+            packetBuilder.writeText(text)
+            runBlocking {
+                socket.send(Datagram(packetBuilder.build(), address))
+            }
         }
     }
 }
