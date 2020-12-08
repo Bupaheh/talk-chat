@@ -30,7 +30,7 @@ class ChatTest {
                 }
             }
         })
-        val serverJob = thread {
+        thread {
             server.start()
         }
         client.sendMessage(Message(testUserName, testText))
