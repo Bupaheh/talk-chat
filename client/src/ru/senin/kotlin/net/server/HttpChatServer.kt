@@ -1,6 +1,5 @@
 package ru.senin.kotlin.net.server
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.ktor.application.*
 import io.ktor.features.*
 import io.ktor.http.*
@@ -8,49 +7,12 @@ import io.ktor.jackson.*
 import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
-import io.ktor.server.engine.*
-import io.ktor.server.netty.*
-import org.slf4j.LoggerFactory
 import org.slf4j.event.Level
 import ru.senin.kotlin.net.Message
 
 
-interface ChatMessageListener {
-    fun messageReceived(userName: String, text: String)
-}
-
-class HttpChatServer(private val host: String, private val port: Int) {
-    private val objectMapper = jacksonObjectMapper()
-    private var listener: ChatMessageListener? = null
-
-    private val engine = createEngine()
-
-    private fun createEngine(): NettyApplicationEngine {
-        val applicationEnvironment = applicationEngineEnvironment {
-            log = LoggerFactory.getLogger("http-server")
-            classLoader = ApplicationEngineEnvironment::class.java.classLoader
-            connector {
-                this.host = this@HttpChatServer.host
-                this.port = this@HttpChatServer.port
-            }
-            module (configureModule())
-        }
-        return NettyApplicationEngine(applicationEnvironment)
-    }
-
-    fun start() {
-        engine.start(true)
-    }
-
-    fun stop() {
-        engine.stop(1000, 2000)
-    }
-
-    fun setMessageListener(listener: ChatMessageListener) {
-        this.listener = listener
-    }
-
-    fun configureModule(): Application.() -> Unit = {
+class HttpChatServer(private val host: String, private val port: Int) : ChatServer(host, port) {
+    override fun configureModule(): Application.() -> Unit = {
         install(CallLogging) {
             level = Level.DEBUG
             filter { call -> call.request.path().startsWith("/") }

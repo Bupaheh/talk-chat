@@ -4,11 +4,14 @@ import com.apurebase.arkenv.Arkenv
 import com.apurebase.arkenv.argument
 import com.apurebase.arkenv.parse
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import io.ktor.websocket.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import retrofit2.Retrofit
 import retrofit2.converter.jackson.JacksonConverterFactory
 import ru.senin.kotlin.net.server.HttpChatServer
+import ru.senin.kotlin.net.server.UdpChatServer
+import ru.senin.kotlin.net.server.WebSocketChatServer
 import java.net.URL
 import kotlin.concurrent.thread
 
@@ -79,7 +82,11 @@ fun main(args: Array<String>) {
             .build().create(RegistryApi::class.java)
 
         // create server engine
-        val server = HttpChatServer(host, port)
+        val server = when (protocol) {
+            Protocol.HTTP -> HttpChatServer(host, port)
+            Protocol.WEBSOCKET -> WebSocketChatServer(host, port)
+            Protocol.UDP -> UdpChatServer(host, port)
+        }
         val chat = Chat(name, registry)
         server.setMessageListener(chat)
 
