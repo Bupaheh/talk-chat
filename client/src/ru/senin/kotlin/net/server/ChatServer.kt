@@ -12,7 +12,7 @@ interface ChatMessageListener {
 }
 
 abstract class ChatServer(private val host: String, private val port: Int) {
-    private val objectMapper = jacksonObjectMapper()
+    protected val objectMapper = jacksonObjectMapper()
     protected var listener: ChatMessageListener? = null
 
     private val engine = createEngine()

@@ -3,9 +3,11 @@ package ru.senin.kotlin.net.registry
 import com.fasterxml.jackson.databind.SerializationFeature
 import io.ktor.application.*
 import io.ktor.client.*
+import io.ktor.client.features.websocket.*
 import io.ktor.client.request.*
 import io.ktor.features.*
 import io.ktor.http.*
+import io.ktor.http.cio.websocket.*
 import io.ktor.jackson.*
 import io.ktor.request.*
 import io.ktor.response.*
@@ -15,23 +17,44 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.slf4j.event.Level
+import ru.senin.kotlin.net.Protocol
 import ru.senin.kotlin.net.UserAddress
 import ru.senin.kotlin.net.UserInfo
 import ru.senin.kotlin.net.checkUserName
+import java.lang.Exception
 import java.util.concurrent.ConcurrentHashMap
 
+val client = HttpClient {
+    install(WebSockets)
+}
+
+suspend fun checkHealth(userAddress: UserAddress): Boolean =
+    try {
+        when (userAddress.protocol) {
+            Protocol.HTTP -> {
+                val call: String = client.get("$userAddress/v1/health")
+                call == "OK"
+            }
+            Protocol.WEBSOCKET -> {
+                client.ws(host = userAddress.host, port = userAddress.port) {
+                }
+               true
+            }
+            Protocol.UDP -> {
+                true
+            }
+        }
+    }
+    catch (e: Exception) {
+        false
+    }
+
 fun main(args: Array<String>) {
-    val client = HttpClient()
     GlobalScope.launch {
         val failedChecks = mutableMapOf<String, Int>()
         while (true) {
             for ((user, userAddress) in Registry.users) {
-                val call: String? = try {
-                    client.get("$userAddress/v1/health")
-                } catch (e: Exception) {
-                    null
-                }
-                if (call == "OK")
+                if (checkHealth(userAddress))
                     failedChecks.remove(user)
                 else
                     failedChecks[user] = failedChecks.getOrDefault(user, 0) + 1
@@ -39,7 +62,7 @@ fun main(args: Array<String>) {
             val usersToRemove = failedChecks.filter { it.value > 3 }.map { it.key }
             usersToRemove.forEach { Registry.users.remove(it) }
             failedChecks -= failedChecks.keys.filterNot { Registry.users.containsKey(it) }
-            delay(120 * 1000)
+            delay(2 * 1000)
         }
     }
     EngineMain.main(args)

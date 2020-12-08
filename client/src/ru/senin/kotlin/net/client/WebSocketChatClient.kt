@@ -3,7 +3,6 @@ package ru.senin.kotlin.net.client
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.ktor.client.*
 import io.ktor.client.features.websocket.*
-import io.ktor.http.*
 import io.ktor.http.cio.websocket.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.Channel

@@ -1,5 +1,6 @@
 package ru.senin.kotlin.net.server
 
+import com.fasterxml.jackson.databind.SerializationFeature
 import io.ktor.application.*
 import io.ktor.features.*
 import io.ktor.http.*
@@ -11,7 +12,7 @@ import org.slf4j.event.Level
 import ru.senin.kotlin.net.Message
 
 
-class HttpChatServer(private val host: String, private val port: Int) : ChatServer(host, port) {
+class HttpChatServer(host: String, port: Int) : ChatServer(host, port) {
     override fun configureModule(): Application.() -> Unit = {
         install(CallLogging) {
             level = Level.DEBUG
@@ -23,19 +24,16 @@ class HttpChatServer(private val host: String, private val port: Int) : ChatServ
         }
 
         install(ContentNegotiation) {
-            // TODO: initialize jackson
             jackson {
-//                enable(SerializationFeature.INDENT_OUTPUT)
+                enable(SerializationFeature.INDENT_OUTPUT)
             }
         }
 
         routing {
-            // TODO: add GET HttpOptions.healthCheckPath route
             get("/v1/health") {
                 call.respondText("OK", contentType = ContentType.Text.Plain)
             }
 
-            // TODO: add POST HttpOptions.path route
             post("/v1/message") {
                 val message = call.receive<Message>()
                 listener?.messageReceived(message.user, message.text)

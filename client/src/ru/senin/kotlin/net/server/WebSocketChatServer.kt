@@ -9,8 +9,6 @@ import io.ktor.websocket.*
 import ru.senin.kotlin.net.Message
 
 class WebSocketChatServer(private val host: String, private val port: Int) : ChatServer(host, port) {
-    private val objectMapper = jacksonObjectMapper()
-
     override fun configureModule(): Application.() -> Unit = {
         install(WebSockets)
 
@@ -24,6 +22,9 @@ class WebSocketChatServer(private val host: String, private val port: Int) : Cha
                         outgoing.send(Frame.Text("OK"))
                     }
                 }
+            }
+            webSocket("/") {
+
             }
         }
     }
