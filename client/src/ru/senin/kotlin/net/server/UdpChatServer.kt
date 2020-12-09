@@ -21,8 +21,8 @@ open class UdpChatServer(host: String, port: Int) : ChatServer(host, port) {
             val socket = aSocket(ActorSelectorManager(Dispatchers.IO))
                 .udp().connect(InetSocketAddress(data.host, data.port))
             val output = socket.openWriteChannel(autoFlush = true)
-            val address = objectMapper.writeValueAsString(UserAddress(Protocol.UDP, host, port))
-            output.writeStringUtf8(objectMapper.writeValueAsString(Message(address, data.id)))
+            val response = objectMapper.writeValueAsString(UdpHealthCheckData(host, port, data.id))
+            output.writeStringUtf8(objectMapper.writeValueAsString(Message("healthCheck", response)))
         } catch(e: Exception) { }
     }
 
