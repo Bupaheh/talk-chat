@@ -3,20 +3,38 @@ package ru.senin.kotlin.net.server
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.ktor.network.selector.*
 import io.ktor.network.sockets.*
+import io.ktor.utils.io.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import ru.senin.kotlin.net.Message
+import ru.senin.kotlin.net.Protocol
+import ru.senin.kotlin.net.UdpHealthCheckData
+import ru.senin.kotlin.net.UserAddress
 import java.net.InetSocketAddress
 
-class UdpChatServer(host: String, port: Int) : ChatServer(host, port) {
+open class UdpChatServer(host: String, port: Int) : ChatServer(host, port) {
     private val socket = aSocket(ActorSelectorManager(Dispatchers.IO)).udp().bind(InetSocketAddress(host, port))
+
+    protected open suspend fun healthCheck(text: String) {
+        try {
+            val data = objectMapper.readValue<UdpHealthCheckData>(text)
+            val socket = aSocket(ActorSelectorManager(Dispatchers.IO))
+                .udp().connect(InetSocketAddress(data.host, data.port))
+            val output = socket.openWriteChannel(autoFlush = true)
+            val address = objectMapper.writeValueAsString(UserAddress(Protocol.UDP, host, port))
+            output.writeStringUtf8(objectMapper.writeValueAsString(Message(address, data.id)))
+        } catch(e: Exception) { }
+    }
 
     override fun start() {
         runBlocking {
             for (datagram in socket.incoming) {
                 val text = datagram.packet.readText()
                 val message = objectMapper.readValue<Message>(text)
-                listener?.messageReceived(message.user, message.text)
+                if (message.user == "healthCheck")
+                    healthCheck(message.text)
+                else
+                    listener?.messageReceived(message.user, message.text)
             }
         }
     }

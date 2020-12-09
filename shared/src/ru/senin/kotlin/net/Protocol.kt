@@ -18,4 +18,6 @@ data class UserInfo(val name: String, val address: UserAddress)
 
 data class Message(val user: String, val text: String)
 
+data class UdpHealthCheckData(val host: String, val port: Int, val id: String)
+
 fun checkUserName(name: String) = """^[a-zA-Z0-9-_.]+$""".toRegex().find(name)

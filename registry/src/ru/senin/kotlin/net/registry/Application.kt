@@ -1,6 +1,7 @@
 package ru.senin.kotlin.net.registry
 
 import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.ktor.application.*
 import io.ktor.client.*
 import io.ktor.client.features.websocket.*
@@ -9,20 +10,24 @@ import io.ktor.features.*
 import io.ktor.http.*
 import io.ktor.http.cio.websocket.*
 import io.ktor.jackson.*
+import io.ktor.network.selector.*
+import io.ktor.network.sockets.*
 import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
 import io.ktor.server.netty.*
+import io.ktor.utils.io.*
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.slf4j.event.Level
-import ru.senin.kotlin.net.Protocol
-import ru.senin.kotlin.net.UserAddress
-import ru.senin.kotlin.net.UserInfo
-import ru.senin.kotlin.net.checkUserName
+import ru.senin.kotlin.net.*
 import java.lang.Exception
+import java.net.InetSocketAddress
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.concurrent.thread
+import kotlin.random.Random.Default.nextLong
 
 val client = HttpClient {
     install(WebSockets)
@@ -38,10 +43,19 @@ suspend fun checkHealth(userAddress: UserAddress): Boolean =
             Protocol.WEBSOCKET -> {
                 client.ws(host = userAddress.host, port = userAddress.port) {
                 }
-               true
+                true
             }
             Protocol.UDP -> {
-                true
+                val result = Registry.healthCheckServer.getHealthCheckStatus(userAddress)
+                val objectMapper = jacksonObjectMapper()
+                val socket = aSocket(ActorSelectorManager(Dispatchers.IO))
+                    .udp().connect(InetSocketAddress(userAddress.host, userAddress.port))
+                val output = socket.openWriteChannel(autoFlush = true)
+                val id = nextLong().toString()
+                val data = objectMapper.writeValueAsString(UdpHealthCheckData("0.0.0.0", 8088, id))
+                Registry.healthCheckServer.updatePendingUpdRequests(userAddress, id)
+                output.writeStringUtf8(objectMapper.writeValueAsString(Message("healthCheck", data)))
+                result
             }
         }
     }
@@ -50,6 +64,9 @@ suspend fun checkHealth(userAddress: UserAddress): Boolean =
     }
 
 fun main(args: Array<String>) {
+    thread(isDaemon = true) {
+        Registry.healthCheckServer.start()
+    }
     GlobalScope.launch {
         val failedChecks = mutableMapOf<String, Int>()
         while (true) {
@@ -62,7 +79,7 @@ fun main(args: Array<String>) {
             val usersToRemove = failedChecks.filter { it.value > 3 }.map { it.key }
             usersToRemove.forEach { Registry.users.remove(it) }
             failedChecks -= failedChecks.keys.filterNot { Registry.users.containsKey(it) }
-            delay(120 * 1000)
+            delay(1 * 1000)
         }
     }
     EngineMain.main(args)
@@ -70,6 +87,7 @@ fun main(args: Array<String>) {
 
 object Registry {
     val users = ConcurrentHashMap<String, UserAddress>()
+    val healthCheckServer = UdpHealthCheckServer("0.0.0.0", 8088)
 }
 
 @Suppress("UNUSED_PARAMETER")
