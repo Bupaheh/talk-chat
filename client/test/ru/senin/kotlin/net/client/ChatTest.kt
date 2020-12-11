@@ -37,7 +37,7 @@ class ChatTest {
             ChatClient.create(protocol, host, port)
                     .sendMessage(Message(testUserName, testText))
         }
-        while (serverThread.isAlive) { }
+        serverThread.join()
         assertTrue(isReceived)
     }
 

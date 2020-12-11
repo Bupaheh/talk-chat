@@ -16,14 +16,18 @@ open class UdpChatServer(host: String, port: Int) : ChatServer(host, port) {
     private val socket = aSocket(ActorSelectorManager(Dispatchers.IO)).udp().bind(InetSocketAddress(host, port))
 
     protected open suspend fun healthCheck(text: String) {
+        val data = objectMapper.readValue<UdpHealthCheckData>(text)
+        val healthCheckSocket = aSocket(ActorSelectorManager(Dispatchers.IO))
+            .udp().connect(InetSocketAddress(data.host, data.port))
         try {
-            val data = objectMapper.readValue<UdpHealthCheckData>(text)
-            val socket = aSocket(ActorSelectorManager(Dispatchers.IO))
-                .udp().connect(InetSocketAddress(data.host, data.port))
-            val output = socket.openWriteChannel(autoFlush = true)
+            val output = healthCheckSocket.openWriteChannel(autoFlush = true)
             val response = objectMapper.writeValueAsString(UdpHealthCheckData(host, port, data.id))
             output.writeStringUtf8(objectMapper.writeValueAsString(Message("healthCheck", response)))
-        } catch(e: Exception) { }
+        } catch (e: Exception) {
+        }
+        finally {
+            healthCheckSocket.close()
+        }
     }
 
     override fun start() {
@@ -38,7 +42,11 @@ open class UdpChatServer(host: String, port: Int) : ChatServer(host, port) {
                         listener?.messageReceived(message.user, message.text)
                 }
             }
-        } catch(e: Exception) { }
+        } catch (e: Exception) {
+        }
+        finally {
+            socket.close()
+        }
     }
 
     override fun stop() {
