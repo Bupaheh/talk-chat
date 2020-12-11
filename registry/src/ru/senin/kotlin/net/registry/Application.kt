@@ -79,7 +79,7 @@ fun main(args: Array<String>) {
             val usersToRemove = failedChecks.filter { it.value > 3 }.map { it.key }
             usersToRemove.forEach { Registry.users.remove(it) }
             failedChecks -= failedChecks.keys.filterNot { Registry.users.containsKey(it) }
-            delay(1 * 1000)
+            delay(120 * 1000)
         }
     }
     EngineMain.main(args)

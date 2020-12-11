@@ -20,4 +20,5 @@ data class Message(val user: String, val text: String)
 
 data class UdpHealthCheckData(val host: String, val port: Int, val id: String)
 
-fun checkUserName(name: String) = """^[a-zA-Z0-9-_.]+$""".toRegex().find(name)
+//"healthCheck" is reserved for UDP health check
+fun checkUserName(name: String) = if (name == "healthCheck") null else """^[a-zA-Z0-9-_.]+$""".toRegex().find(name)

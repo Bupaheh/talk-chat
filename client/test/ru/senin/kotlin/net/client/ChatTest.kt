@@ -2,37 +2,51 @@ package ru.senin.kotlin.net.client
 
 import org.junit.jupiter.api.Test
 import ru.senin.kotlin.net.Message
-import ru.senin.kotlin.net.UserAddress
 import kotlin.concurrent.thread
 import ru.senin.kotlin.net.server.ChatMessageListener
-import ru.senin.kotlin.net.server.HttpChatServer
 import kotlin.test.*
-import kotlinx.coroutines.async
-import kotlinx.coroutines.CoroutineStart
+import ru.senin.kotlin.net.Protocol
+import ru.senin.kotlin.net.server.ChatServer
+import java.lang.Thread.sleep
 
 class ChatTest {
-    val host = "0.0.0.0"
-    val port = 8080
+    private val host = "0.0.0.0"
+    private val port = 8087
     val testUserName = "pupkin"
     val testText = "Hi there"
 
-    @Test
-    fun sendMessage() {
-        val server = HttpChatServer(host, port)
-        val client = HttpChatClient(host, port)
+    private fun test(protocol: Protocol) {
+        val server = ChatServer.create(protocol, host, port)
+        var isReceived = false
         server.setMessageListener(object: ChatMessageListener {
             override fun messageReceived(userName: String, text: String) {
                 assertEquals(testUserName, userName)
                 assertEquals(testText, text)
+                isReceived = true
                 thread {
-                    Thread.sleep(1000);
+                    sleep(1000)
                     server.stop()
                 }
             }
         })
-        thread {
+        val serverThread = thread {
             server.start()
         }
-        client.sendMessage(Message(testUserName, testText))
+        thread {
+            sleep(1000)
+            ChatClient.create(protocol, host, port)
+                    .sendMessage(Message(testUserName, testText))
+        }
+        while (serverThread.isAlive) { }
+        assertTrue(isReceived)
     }
+
+    @Test
+    fun `HTTP sendMessage test`() = test(Protocol.HTTP)
+
+    @Test
+    fun `WebSocket sendMessage test`() = test(Protocol.WEBSOCKET)
+
+    @Test
+    fun `UDP sendMessage test`() = test(Protocol.UDP)
 }
