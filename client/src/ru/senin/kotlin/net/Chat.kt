@@ -12,7 +12,7 @@ class Chat(
     private var exit = false
     private var selectedUser: String? = null
     private val clients = mutableMapOf<String, ChatClient>()
-    private val users =  mutableMapOf<String, UserAddress>()
+    private val users = mutableMapOf<String, UserAddress>()
 
     private fun prompt(): String {
         val prompt = "  to [${selectedUser ?: "<not selected>"}] <<< "
@@ -28,7 +28,7 @@ class Chat(
     private fun updateUsersList(isSilent: Boolean = false) {
         val registeredUsers = registry.list().execute().getOrNull()
         if (registeredUsers == null) {
-            if(!isSilent)
+            if (!isSilent)
                 println("Cannot get users from registry")
             return
         }
@@ -43,7 +43,7 @@ class Chat(
             it.value.close()
         }
         clients.entries.retainAll { it.key in aliveUserNames }
-        if(!isSilent)
+        if (!isSilent)
             users.forEach { (name, address) ->
                 println("$name ==> $address")
             }
@@ -59,6 +59,7 @@ class Chat(
     }
 
     private fun exit() {
+        clients.values.forEach { it.close() }
         exit = true
     }
 
@@ -78,8 +79,7 @@ class Chat(
         }
         try {
             client.sendMessage(Message(name, text))
-        }
-        catch(e: Exception) {
+        } catch (e: Exception) {
             println("Error! ${e.message}")
         }
     }
@@ -103,7 +103,8 @@ class Chat(
                     val userName = input.split("""\s+""".toRegex()).drop(1).joinToString(" ")
                     selectUser(userName)
                 }
-                "" -> {}
+                "" -> {
+                }
                 else -> message(input)
             }
         }

@@ -24,7 +24,6 @@ class ChatTest {
                 assertEquals(testText, text)
                 isReceived = true
                 thread {
-                    sleep(1000)
                     server.stop()
                 }
             }
@@ -32,12 +31,11 @@ class ChatTest {
         val serverThread = thread {
             server.start()
         }
-        thread {
-            sleep(1000)
-            ChatClient.create(protocol, host, port)
-                    .sendMessage(Message(testUserName, testText))
+        sleep(1000)
+        ChatClient.create(protocol, host, port).use {
+            it.sendMessage(Message(testUserName, testText))
+            serverThread.join()
         }
-        serverThread.join()
         assertTrue(isReceived)
     }
 

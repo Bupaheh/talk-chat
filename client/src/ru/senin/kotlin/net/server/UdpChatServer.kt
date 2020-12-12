@@ -28,23 +28,24 @@ open class UdpChatServer(host: String, port: Int) : ChatServer(host, port) {
 
     override fun start() {
         runBlocking {
-            try {
-                for (datagram in socket.incoming) {
-                    val text = datagram.packet.readText()
-                    val message = objectMapper.readValue<Message>(text)
-                    if (message.user == "healthCheck")
-                        healthCheck(message.text)
-                    else
-                        listener?.messageReceived(message.user, message.text)
+            serverJob = launch {
+                socket.use {
+                    for (datagram in socket.incoming) {
+                        val text = datagram.packet.readText()
+                        val message = objectMapper.readValue<Message>(text)
+                        if (message.user == "healthCheck")
+                            healthCheck(message.text)
+                        else
+                            listener?.messageReceived(message.user, message.text)
+                    }
                 }
-            }
-            catch (e: Exception) {
-                socket.close()
             }
         }
     }
 
     override fun stop() {
-        socket.close()
+        runBlocking {
+            serverJob.cancelAndJoin()
+        }
     }
 }
