@@ -50,12 +50,14 @@ suspend fun checkHealth(userAddress: UserAddress): Boolean =
                 val objectMapper = jacksonObjectMapper()
                 val socket = aSocket(ActorSelectorManager(Dispatchers.IO))
                     .udp().connect(InetSocketAddress(userAddress.host, userAddress.port))
-                val output = socket.openWriteChannel(autoFlush = true)
-                val id = nextLong().toString()
-                val data = objectMapper.writeValueAsString(UdpHealthCheckData("0.0.0.0", 8088, id))
-                Registry.healthCheckServer.updatePendingUpdRequests(userAddress, id)
-                output.writeStringUtf8(objectMapper.writeValueAsString(Message("healthCheck", data)))
-                result
+                socket.use {
+                    val output = it.openWriteChannel(autoFlush = true)
+                    val id = nextLong().toString()
+                    val data = objectMapper.writeValueAsString(UdpHealthCheckData("0.0.0.0", 8088, id))
+                    Registry.healthCheckServer.updatePendingUpdRequests(userAddress, id)
+                    output.writeStringUtf8(objectMapper.writeValueAsString(Message("healthCheck", data)))
+                    result
+                }
             }
         }
     }

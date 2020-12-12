@@ -39,6 +39,9 @@ class Chat(
         }
         users.clear()
         users.putAll(registeredUsers)
+        clients.filterNot { it.key in aliveUserNames }.forEach {
+            it.value.close()
+        }
         clients.entries.retainAll { it.key in aliveUserNames }
         if(!isSilent)
             users.forEach { (name, address) ->
