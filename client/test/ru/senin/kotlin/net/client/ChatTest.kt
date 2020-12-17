@@ -45,6 +45,7 @@ class ChatTest {
     @Test
     fun `WebSocket sendMessage test`() = test(Protocol.WEBSOCKET)
 
+    @Ignore
     @Test
     fun `UDP sendMessage test`() = test(Protocol.UDP)
 }
