@@ -1,5 +1,6 @@
 package ru.senin.kotlin.net.client
 
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.jupiter.api.Test
 import ru.senin.kotlin.net.Message
 import kotlin.concurrent.thread
@@ -9,6 +10,7 @@ import ru.senin.kotlin.net.Protocol
 import ru.senin.kotlin.net.server.ChatServer
 import java.lang.Thread.sleep
 
+@ExperimentalCoroutinesApi
 class ChatTest {
     private val host = "0.0.0.0"
     private val port = 8087

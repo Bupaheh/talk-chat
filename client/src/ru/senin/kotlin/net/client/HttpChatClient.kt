@@ -5,8 +5,6 @@ import retrofit2.Retrofit
 import retrofit2.converter.jackson.JacksonConverterFactory
 import ru.senin.kotlin.net.HttpApi
 import ru.senin.kotlin.net.Message
-import ru.senin.kotlin.net.RegistryApi
-import ru.senin.kotlin.net.parameters
 
 class HttpChatClient(host: String, port: Int): ChatClient {
     private val objectMapper = jacksonObjectMapper()

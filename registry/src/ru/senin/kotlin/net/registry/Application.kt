@@ -8,7 +8,6 @@ import io.ktor.client.features.websocket.*
 import io.ktor.client.request.*
 import io.ktor.features.*
 import io.ktor.http.*
-import io.ktor.http.cio.websocket.*
 import io.ktor.jackson.*
 import io.ktor.network.selector.*
 import io.ktor.network.sockets.*

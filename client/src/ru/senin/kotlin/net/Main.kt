@@ -4,8 +4,7 @@ import com.apurebase.arkenv.Arkenv
 import com.apurebase.arkenv.argument
 import com.apurebase.arkenv.parse
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import retrofit2.Retrofit
@@ -48,6 +47,7 @@ lateinit var parameters : Parameters
 
 fun checkHost(host: String) = host.length <= 253 && Regex("""(\p{Alnum}{1,63}.)*\p{Alnum}{1,63}""").matches(host)
 
+@ExperimentalCoroutinesApi
 fun main(args: Array<String>) {
     try {
         parameters = Parameters().parse(args)

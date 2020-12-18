@@ -4,7 +4,6 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.ktor.network.selector.*
 import io.ktor.network.sockets.*
 import io.ktor.utils.io.*
-import io.ktor.utils.io.core.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import ru.senin.kotlin.net.Message

@@ -1,11 +1,9 @@
 package ru.senin.kotlin.net.server
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.ktor.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import org.slf4j.LoggerFactory
-import ru.senin.kotlin.net.Protocol
 
 abstract class NettyChatServer(host: String, port: Int) : ChatServer(host, port) {
     private val engine = createEngine()

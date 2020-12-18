@@ -1,6 +1,5 @@
 package ru.senin.kotlin.net.server
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.ktor.application.*
 import io.ktor.http.cio.websocket.*

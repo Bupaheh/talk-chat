@@ -1,9 +1,11 @@
 package ru.senin.kotlin.net
 
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import ru.senin.kotlin.net.client.ChatClient
 import ru.senin.kotlin.net.server.ChatMessageListener
 import kotlin.concurrent.thread
 
+@ExperimentalCoroutinesApi
 class Chat(
     private val name: String,
     private val registry: RegistryApi

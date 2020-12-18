@@ -6,9 +6,7 @@ import io.ktor.network.sockets.*
 import io.ktor.utils.io.*
 import kotlinx.coroutines.*
 import ru.senin.kotlin.net.Message
-import ru.senin.kotlin.net.Protocol
 import ru.senin.kotlin.net.UdpHealthCheckData
-import ru.senin.kotlin.net.UserAddress
 import java.net.InetSocketAddress
 
 open class UdpChatServer(host: String, port: Int) : ChatServer(host, port) {
