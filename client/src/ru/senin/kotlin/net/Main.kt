@@ -36,7 +36,7 @@ class Parameters : Arkenv() {
         description = "Public URL"
     }
 
-    val protocol : String by argument("--protocol") {
+    val protocolName : String by argument("--protocol") {
         description = "Server protocol"
         defaultValue = { Protocol.HTTP.name }
     }
@@ -56,13 +56,9 @@ fun main(args: Array<String>) {
             println(parameters.toString())
             return
         }
-        val protocol = Protocol.valueOf(parameters.protocol)
+        val protocol = Protocol.valueOf(parameters.protocolName)
         val host = parameters.host
-        val port = parameters.port ?: when (protocol) {
-            Protocol.HTTP -> 8080
-            Protocol.WEBSOCKET -> 8082
-            Protocol.UDP -> 3000
-        }
+        val port = parameters.port ?: protocol.defaultPort
 
         // TODO: validate host and port
         if (!checkHost(host))
@@ -94,7 +90,10 @@ fun main(args: Array<String>) {
             val userAddress  = when {
                 parameters.publicUrl != null -> {
                     val url = URL(parameters.publicUrl)
-                    UserAddress(protocol, url.host, url.port)
+                    if (url.port == -1)
+                        UserAddress(protocol, url.host, protocol.defaultUrlPort)
+                    else
+                        UserAddress(protocol, url.host, url.port)
                 }
                 else -> UserAddress(protocol, host, port)
             }

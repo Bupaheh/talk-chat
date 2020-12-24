@@ -26,7 +26,6 @@ class ApplicationTest {
     private val testUserName = "pupkin"
     private val testHttpAddress = UserAddress(Protocol.HTTP, "127.0.0.1", 9999)
     private val testWebSocketAddress = UserAddress(Protocol.WEBSOCKET, "127.0.0.1", 8087)
-    private val testUDPAddress = UserAddress(Protocol.UDP, "127.0.0.1", 8091)
     private val userData = UserInfo(testUserName, testHttpAddress)
 
     @BeforeEach
@@ -90,16 +89,6 @@ class ApplicationTest {
             val content = response.content ?: fail("No response content")
             val users = objectMapper.readValue<HashMap<String, UserAddress>>(content)
             assertEquals(users[testUserName], testWebSocketAddress)
-        }
-    }
-
-    @Test
-    fun `list UDP user`() = withRegisteredTestUser(testUDPAddress) {
-        handleRequest(HttpMethod.Get, "/v1/users").apply {
-            assertEquals(HttpStatusCode.OK, response.status())
-            val content = response.content ?: fail("No response content")
-            val users = objectMapper.readValue<HashMap<String, UserAddress>>(content)
-            assertEquals(users[testUserName], testUDPAddress)
         }
     }
 
