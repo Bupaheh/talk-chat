@@ -25,6 +25,8 @@ class ApplicationTest {
     private val objectMapper = jacksonObjectMapper()
     private val testUserName = "pupkin"
     private val testHttpAddress = UserAddress(Protocol.HTTP, "127.0.0.1", 9999)
+    private val testWebSocketAddress = UserAddress(Protocol.WEBSOCKET, "127.0.0.1", 8087)
+    private val testUDPAddress = UserAddress(Protocol.UDP, "127.0.0.1", 8091)
     private val userData = UserInfo(testUserName, testHttpAddress)
 
     @BeforeEach
@@ -43,7 +45,7 @@ class ApplicationTest {
     }
 
     @Test
-    fun `register user`() = withRegisteredTestUser {
+    fun `register user`() = withRegisteredTestUser(testHttpAddress) {
 
         //test with incorrect name
         val testUserData = UserInfo("Test test", testHttpAddress)
@@ -72,7 +74,7 @@ class ApplicationTest {
     }
 
     @Test
-    fun `list users`() = withRegisteredTestUser {
+    fun `list HTTP user`() = withRegisteredTestUser(testHttpAddress) {
         handleRequest(HttpMethod.Get, "/v1/users").apply {
             assertEquals(HttpStatusCode.OK, response.status())
             val content = response.content ?: fail("No response content")
@@ -82,7 +84,40 @@ class ApplicationTest {
     }
 
     @Test
-    fun `delete user`() = withRegisteredTestUser {
+    fun `list WebSocket user`() = withRegisteredTestUser(testWebSocketAddress) {
+        handleRequest(HttpMethod.Get, "/v1/users").apply {
+            assertEquals(HttpStatusCode.OK, response.status())
+            val content = response.content ?: fail("No response content")
+            val users = objectMapper.readValue<HashMap<String, UserAddress>>(content)
+            assertEquals(users[testUserName], testWebSocketAddress)
+        }
+    }
+
+    @Test
+    fun `list UDP user`() = withRegisteredTestUser(testUDPAddress) {
+        handleRequest(HttpMethod.Get, "/v1/users").apply {
+            assertEquals(HttpStatusCode.OK, response.status())
+            val content = response.content ?: fail("No response content")
+            val users = objectMapper.readValue<HashMap<String, UserAddress>>(content)
+            assertEquals(users[testUserName], testUDPAddress)
+        }
+    }
+
+    @Test
+    fun `list users with empty user list`() {
+        withTestApplication({ testModule() }) {
+            handleRequest(HttpMethod.Get, "/v1/users").apply {
+                assertEquals(HttpStatusCode.OK, response.status())
+                val content = response.content ?: fail("No response content")
+                val users = objectMapper.readValue<HashMap<String, UserAddress>>(content)
+                assertEquals(0, users.size)
+            }
+        }
+    }
+
+
+    @Test
+    fun `delete user`() = withRegisteredTestUser(testHttpAddress) {
         handleRequest {
             method = HttpMethod.Delete
             uri = "/v1/users/${testUserName}"
@@ -103,13 +138,24 @@ class ApplicationTest {
         }
     }
 
-    private fun withRegisteredTestUser(block: TestApplicationEngine.() -> Unit) {
+    @Test
+    suspend fun `HTTP healthCheck`() {
+        assertFalse(checkHealth(testHttpAddress))
+    }
+
+    @Test
+    suspend fun `WebSocket healthCheck`() {
+        assertFalse(checkHealth(testWebSocketAddress))
+    }
+
+    private fun withRegisteredTestUser(testAddress: UserAddress, block: TestApplicationEngine.() -> Unit) {
         withTestApplication({ testModule() }) {
             handleRequest {
                 method = HttpMethod.Post
                 uri = "/v1/users"
                 addHeader("Content-type", "application/json")
-                setBody(objectMapper.writeValueAsString(userData))
+                val testUserData = UserInfo(testUserName, testAddress)
+                setBody(objectMapper.writeValueAsString(testUserData))
             }.apply {
                 assertEquals(HttpStatusCode.OK, response.status())
                 val content = response.content ?: fail("No response content")
