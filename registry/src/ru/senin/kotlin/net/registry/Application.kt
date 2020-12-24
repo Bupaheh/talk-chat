@@ -61,6 +61,7 @@ suspend fun checkHealth(userAddress: UserAddress): Boolean =
         }
     }
     catch (e: Exception) {
+        println("WEBSOCKET EXPLODED :c" + e.message)
         false
     }
 
@@ -80,7 +81,7 @@ fun main(args: Array<String>) {
             val usersToRemove = failedChecks.filter { it.value > 3 }.map { it.key }
             usersToRemove.forEach { Registry.users.remove(it) }
             failedChecks -= failedChecks.keys.filterNot { Registry.users.containsKey(it) }
-            delay(120 * 1000)
+            delay(1 * 1000)
         }
     }
     EngineMain.main(args)

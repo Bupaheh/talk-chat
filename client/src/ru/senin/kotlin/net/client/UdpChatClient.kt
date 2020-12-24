@@ -11,22 +11,19 @@ import java.net.InetSocketAddress
 
 class UdpChatClient(host: String, port: Int) : ChatClient {
     private val address = InetSocketAddress(host, port)
-    private val socket = aSocket(ActorSelectorManager(Dispatchers.IO)).udp().connect(address)
-    private val output = socket.openWriteChannel(autoFlush = true)
     private val objectMapper = jacksonObjectMapper()
 
     override fun sendMessage(message: Message) {
-        if (socket.isClosed)
-            println("Failed to connect to ${address.hostString}:${address.port}")
-        else {
+        try {
+            val socket = aSocket(ActorSelectorManager(Dispatchers.IO)).udp().connect(address)
+            val output = socket.openWriteChannel(autoFlush = true)
             val text = objectMapper.writeValueAsString(message)
             runBlocking {
                 output.writeStringUtf8(text)
             }
+            socket.close()
+        } catch(e: Exception) {
+            println("Failed to connect to ${address.hostString}:${address.port}")
         }
-    }
-
-    override fun close() {
-        socket.close()
     }
 }

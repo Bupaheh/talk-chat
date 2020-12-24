@@ -13,11 +13,19 @@ import java.lang.Thread.sleep
 @ExperimentalCoroutinesApi
 class ChatTest {
     private val host = "0.0.0.0"
-    private val port = 8087
+    private val port = 8083
     val testUserName = "pupkin"
-    val testText = "Hi there"
+    private val testText1 = "Hi there"
+    private val testText2 = ""
+    private val testText3 = "Long message! Long message! Long message! Long message! Long message! " +
+            "Long message! Long message! Long message! Long message! Long message! " +
+            "Long message! Long message! Long message! Long message! Long message! " +
+            "Long message! Long message! Long message! Long message! Long message! " +
+            "Long message! Long message! Long message! Long message! Long message! " +
+            "Long message! Long message! Long message! Long message! Long message! " +
+            "Long message! Long message! Long message! Long message! Long message! "
 
-    private fun test(protocol: Protocol) {
+    private fun test(protocol: Protocol, testText: String) {
         val server = ChatServer.create(protocol, host, port)
         var isReceived = false
         server.setMessageListener(object: ChatMessageListener {
@@ -42,12 +50,32 @@ class ChatTest {
     }
 
     @Test
-    fun `HTTP sendMessage test`() = test(Protocol.HTTP)
+    fun `HTTP sendMessage test`() = test(Protocol.HTTP, testText1)
 
     @Test
-    fun `WebSocket sendMessage test`() = test(Protocol.WEBSOCKET)
+    fun `HTTP sendMessage blank message test`() = test(Protocol.HTTP, testText2)
+
+    @Test
+    fun `HTTP sendMessage long message test`() = test(Protocol.HTTP, testText3)
+
+    @Test
+    fun `WebSocket sendMessage test`() = test(Protocol.WEBSOCKET, testText1)
+
+    @Test
+    fun `WebSocket sendMessage blank message test`() = test(Protocol.WEBSOCKET, testText2)
+
+    @Test
+    fun `WebSocket sendMessage long message test`() = test(Protocol.WEBSOCKET, testText3)
 
     @Ignore
     @Test
-    fun `UDP sendMessage test`() = test(Protocol.UDP)
+    fun `UDP sendMessage test`() = test(Protocol.UDP, testText1)
+
+    @Ignore
+    @Test
+    fun `UDP sendMessage blank message test`() = test(Protocol.UDP, testText2)
+
+    @Ignore
+    @Test
+    fun `UDP sendMessage long message test`() = test(Protocol.UDP, testText3)
 }
